@@ -1,0 +1,296 @@
+{% extends 'resume_analyzer/base.html' %}
+{% load resume_filters %}
+
+{% block title %}ATS Analysis Results - {{ analysis.resume.original_filename }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h2">
+                    <i class="fas fa-chart-line text-primary me-2"></i>
+                    Analysis Results
+                </h1>
+                <p class="text-muted mb-0">{{ analysis.resume.original_filename }}</p>
+            </div>
+            <div class="text-end">
+                <div class="score-circle score-{% if analysis.overall_score >= 80 %}good{% elif analysis.overall_score >= 60 %}fair{% else %}poor{% endif %}">
+                    {{ analysis.overall_score|floatformat:0 }}/100
+                </div>
+                <div class="mt-2">
+                    <small class="text-muted">Grade: {{ analysis.get_score_grade }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Summary Cards -->
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="text-primary mb-2">
+                    <i class="fas fa-file-word fa-2x"></i>
+                </div>
+                <h5 class="card-title">Word Count</h5>
+                <h3 class="text-primary">{{ analysis.word_count }}</h3>
+                <small class="text-muted">
+                    {% if analysis.word_count < 200 %}Too Short{% elif analysis.word_count > 1000 %}Too Long{% else %}Good Length{% endif %}
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="text-success mb-2">
+                    <i class="fas fa-tags fa-2x"></i>
+                </div>
+                <h5 class="card-title">Keywords</h5>
+                <h3 class="text-success">{{ analysis.keyword_density|floatformat:1 }}%</h3>
+                <small class="text-muted">Density Score</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="text-info mb-2">
+                    <i class="fas fa-book-open fa-2x"></i>
+                </div>
+                <h5 class="card-title">Readability</h5>
+                <h3 class="text-info">{{ analysis.readability_score|floatformat:0 }}</h3>
+                <small class="text-muted">Flesch Score</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="text-warning mb-2">
+                    <i class="fas fa-clock fa-2x"></i>
+                </div>
+                <h5 class="card-title">Analyzed</h5>
+                <h6 class="text-warning">{{ analysis.analyzed_at|date:"M d, Y" }}</h6>
+                <small class="text-muted">{{ analysis.analyzed_at|time:"g:i A" }}</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Detailed Scores -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Score Breakdown
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Section Completeness -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Resume Sections</span>
+                        <span>{{ section_score }}/100</span>
+                    </div>
+                    <div class="progress progress-custom">
+                        <div class="progress-bar {% if section_score >= 75 %}bg-success{% elif section_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                             style="width: {{ section_score }}%"></div>
+                    </div>
+                </div>
+
+                <!-- Keyword Score -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Keyword Relevance</span>
+                        <span>{{ keyword_score|floatformat:0 }}/100</span>
+                    </div>
+                    <div class="progress progress-custom">
+                        <div class="progress-bar {% if keyword_score >= 75 %}bg-success{% elif keyword_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                             style="width: {{ keyword_score }}%"></div>
+                    </div>
+                </div>
+
+                <!-- Readability Score -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Readability</span>
+                        <span>{{ readability_score }}/100</span>
+                    </div>
+                    <div class="progress progress-custom">
+                        <div class="progress-bar {% if readability_score >= 75 %}bg-success{% elif readability_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                             style="width: {{ readability_score }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Analysis -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list-check me-2"></i>
+                    Section Analysis
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span>
+                            <i class="fas fa-address-card me-2"></i>
+                            Contact Information
+                        </span>
+                        {% if analysis.has_contact_info %}
+                            <span class="badge bg-success"><i class="fas fa-check"></i></span>
+                        {% else %}
+                            <span class="badge bg-danger"><i class="fas fa-times"></i></span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span>
+                            <i class="fas fa-briefcase me-2"></i>
+                            Work Experience
+                        </span>
+                        {% if analysis.has_work_experience %}
+                            <span class="badge bg-success"><i class="fas fa-check"></i></span>
+                        {% else %}
+                            <span class="badge bg-danger"><i class="fas fa-times"></i></span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span>
+                            <i class="fas fa-graduation-cap me-2"></i>
+                            Education
+                        </span>
+                        {% if analysis.has_education %}
+                            <span class="badge bg-success"><i class="fas fa-check"></i></span>
+                        {% else %}
+                            <span class="badge bg-danger"><i class="fas fa-times"></i></span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span>
+                            <i class="fas fa-tools me-2"></i>
+                            Skills Section
+                        </span>
+                        {% if analysis.has_skills %}
+                            <span class="badge bg-success"><i class="fas fa-check"></i></span>
+                        {% else %}
+                            <span class="badge bg-danger"><i class="fas fa-times"></i></span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recommendations -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Recommendations for Improvement
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if analysis.recommendations %}
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Actionable Feedback
+                        </h6>
+                        {% for recommendation in analysis.recommendations|split:'; ' %}
+                            <p class="mb-2">
+                                <i class="fas fa-arrow-right text-primary me-2"></i>
+                                {{ recommendation }}
+                            </p>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-trophy me-2"></i>
+                        Great job! Your resume looks well-optimized for ATS systems.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Technical Issues -->
+{% if analysis.has_tables or analysis.has_special_characters or analysis.has_images %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Technical Issues Found
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if analysis.has_tables %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-table me-2"></i>
+                        <strong>Tables Detected:</strong> Consider replacing tables with simple bullet points for better ATS compatibility.
+                    </div>
+                {% endif %}
+                
+                {% if analysis.has_special_characters %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-font me-2"></i>
+                        <strong>Special Characters:</strong> Excessive special characters detected. Use standard formatting to improve readability.
+                    </div>
+                {% endif %}
+                
+                {% if analysis.has_images %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-image me-2"></i>
+                        <strong>Images/Graphics:</strong> Images may not be readable by ATS systems. Consider using text-based formatting.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="text-center">
+            <a href="{% url 'enhanced_analysis_result' analysis.id %}" class="btn btn-success btn-lg me-3">
+                <i class="fas fa-magic me-2"></i>
+                View Detailed Suggestions
+            </a>
+            <a href="{% url 'home' %}" class="btn btn-primary me-3">
+                <i class="fas fa-upload me-2"></i>
+                Analyze Another Resume
+            </a>
+            <a href="{% url 'tips' %}" class="btn btn-outline-success me-3">
+                <i class="fas fa-lightbulb me-2"></i>
+                View ATS Tips
+            </a>
+            <a href="{% url 'analysis_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-list me-2"></i>
+                View All Analyses
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

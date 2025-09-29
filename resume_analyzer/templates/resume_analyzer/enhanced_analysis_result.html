@@ -1,0 +1,337 @@
+{% extends 'resume_analyzer/base.html' %}
+{% load resume_filters %}
+
+{% block title %}Enhanced ATS Analysis - {{ analysis.resume.original_filename }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h2">
+                    <i class="fas fa-chart-line text-primary me-2"></i>
+                    Enhanced ATS Analysis
+                </h1>
+                <p class="text-muted mb-0">{{ analysis.resume.original_filename }}</p>
+            </div>
+            <div class="text-end">
+                <div class="score-circle score-{% if analysis.overall_score >= 80 %}good{% elif analysis.overall_score >= 60 %}fair{% else %}poor{% endif %}">
+                    {{ analysis.overall_score|floatformat:0 }}/100
+                </div>
+                <div class="mt-2">
+                    <small class="text-muted">Grade: {{ analysis.get_score_grade }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-primary">{{ analysis.word_count }}</h3>
+                <small>Words</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-success">{{ analysis.keyword_density|floatformat:1 }}%</h3>
+                <small>Keyword Density</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-info">{{ analysis.readability_score|floatformat:0 }}</h3>
+                <small>Readability</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-warning">{{ missing_keywords|length }}</h3>
+                <small>Missing Keywords</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Missing Keywords Section -->
+{% if missing_keywords %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Missing Important Keywords
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">Consider adding these industry-relevant keywords to improve your ATS score:</p>
+                <div class="row">
+                    {% for keyword, weight in missing_keywords %}
+                    <div class="col-md-4 col-lg-3 mb-2">
+                        <span class="badge bg-warning text-dark me-2">{{ keyword }}</span>
+                        {% if weight > 1.5 %}
+                            <small class="text-muted">(High Priority)</small>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>How to add keywords:</strong> Naturally incorporate these terms into your work experience descriptions, skills section, or professional summary.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Present Keywords Section -->
+{% if present_keywords %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-success">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-check-circle me-2"></i>
+                    Keywords Found in Your Resume
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">Great! These important keywords are already in your resume:</p>
+                <div class="row">
+                    {% for keyword, weight in present_keywords %}
+                    <div class="col-md-4 col-lg-3 mb-2">
+                        <span class="badge bg-success me-2">{{ keyword }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Content Gaps Section -->
+{% if content_gaps %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-primary">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    Content Improvements
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for gap in content_gaps %}
+                <div class="mb-4">
+                    <h6 class="text-primary">
+                        <i class="fas fa-arrow-right me-2"></i>
+                        {{ gap.title }}
+                    </h6>
+                    <p class="text-muted mb-2">{{ gap.description }}</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="small">Examples to include:</h6>
+                            <ul class="small">
+                                {% for example in gap.examples %}
+                                <li>{{ example }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                {% if not forloop.last %}<hr>{% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Section Improvements -->
+{% if section_improvements %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h4 class="mb-3">
+            <i class="fas fa-list-check text-primary me-2"></i>
+            Section-by-Section Improvements
+        </h4>
+    </div>
+    {% for improvement in section_improvements %}
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 {% if improvement.priority == 'high' %}border-danger{% elif improvement.priority == 'medium' %}border-warning{% else %}border-info{% endif %}">
+            <div class="card-header {% if improvement.priority == 'high' %}bg-danger text-white{% elif improvement.priority == 'medium' %}bg-warning text-dark{% else %}bg-info text-white{% endif %}">
+                <h6 class="mb-0">
+                    {% if improvement.priority == 'high' %}
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                    {% elif improvement.priority == 'medium' %}
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                    {% else %}
+                        <i class="fas fa-info-circle me-2"></i>
+                    {% endif %}
+                    {{ improvement.section }}
+                    <span class="badge bg-light text-dark ms-2">{{ improvement.priority|capfirst }} Priority</span>
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="small mb-0">
+                    {% for suggestion in improvement.suggestions %}
+                    <li class="mb-2">{{ suggestion }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ATS Formatting Tips -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-robot me-2"></i>
+                    ATS Formatting Checklist
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-success">✓ Do This:</h6>
+                        <ul class="small">
+                            <li>Use standard fonts (Arial, Calibri, Times New Roman)</li>
+                            <li>Save as .docx or .pdf format</li>
+                            <li>Use clear section headings</li>
+                            <li>Include keywords naturally in content</li>
+                            <li>Use bullet points for accomplishments</li>
+                            <li>Keep formatting simple and clean</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-danger">✗ Avoid This:</h6>
+                        <ul class="small">
+                            <li>Images, graphics, or photos</li>
+                            <li>Complex tables or columns</li>
+                            <li>Headers and footers with important info</li>
+                            <li>Special characters or symbols</li>
+                            <li>Fancy fonts or creative layouts</li>
+                            <li>Text boxes or shapes</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Technical Issues (if any) -->
+{% if analysis.has_tables or analysis.has_special_characters or analysis.has_images %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-times-circle me-2"></i>
+                    Technical Issues Detected
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if analysis.has_tables %}
+                    <div class="alert alert-danger">
+                        <strong><i class="fas fa-table me-2"></i>Tables Detected:</strong> Replace tables with simple bullet points or lists for better ATS compatibility.
+                    </div>
+                {% endif %}
+                
+                {% if analysis.has_special_characters %}
+                    <div class="alert alert-danger">
+                        <strong><i class="fas fa-font me-2"></i>Special Characters:</strong> Remove excessive special characters and symbols to improve parsing.
+                    </div>
+                {% endif %}
+                
+                {% if analysis.has_images %}
+                    <div class="alert alert-danger">
+                        <strong><i class="fas fa-image me-2"></i>Images/Graphics:</strong> Remove images as they cannot be read by ATS systems.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Action Steps -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-clipboard-list text-primary me-2"></i>
+                    Next Steps to Improve Your Resume
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center mb-3">
+                            <div class="display-6 text-primary">1</div>
+                            <h6>Fix High Priority Issues</h6>
+                            <p class="small text-muted">Address missing sections and add essential contact information</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center mb-3">
+                            <div class="display-6 text-success">2</div>
+                            <h6>Add Missing Keywords</h6>
+                            <p class="small text-muted">Incorporate relevant industry terms naturally into your content</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center mb-3">
+                            <div class="display-6 text-info">3</div>
+                            <h6>Enhance Content</h6>
+                            <p class="small text-muted">Add quantifiable achievements and stronger action verbs</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="text-center">
+            <a href="{% url 'interactive_review' analysis.id %}" class="btn btn-success btn-lg me-3">
+                <i class="fas fa-highlighter me-2"></i>
+                Interactive Review
+            </a>
+            <a href="{% url 'home' %}" class="btn btn-primary me-3">
+                <i class="fas fa-upload me-2"></i>
+                Analyze Another Resume
+            </a>
+            <a href="{% url 'tips' %}" class="btn btn-outline-success me-3">
+                <i class="fas fa-lightbulb me-2"></i>
+                View More ATS Tips
+            </a>
+            <a href="{% url 'analysis_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-list me-2"></i>
+                View All Analyses
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

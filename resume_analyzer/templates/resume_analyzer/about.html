@@ -1,0 +1,119 @@
+{% extends 'resume_analyzer/base.html' %}
+
+{% block title %}About ATS Resume Checker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h1 class="display-5 text-center mb-5">
+            <i class="fas fa-info-circle text-primary me-2"></i>
+            About ATS Resume Checker
+        </h1>
+
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">What is an ATS?</h4>
+            </div>
+            <div class="card-body">
+                <p>An <strong>Applicant Tracking System (ATS)</strong> is software used by employers to collect, sort, scan, and rank job applications. Over 90% of large companies use ATS to filter resumes before they reach human recruiters.</p>
+                
+                <p>ATS systems parse your resume content and compare it against job requirements. Resumes that don't meet certain criteria may never be seen by hiring managers, making ATS optimization crucial for job seekers.</p>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">How Our Tool Works</h4>
+            </div>
+            <div class="card-body">
+                <p>Our ATS Resume Checker analyzes your resume across multiple dimensions:</p>
+                <ul>
+                    <li><strong>Text Extraction:</strong> We extract and analyze all text content from your PDF or Word document</li>
+                    <li><strong>Section Analysis:</strong> We identify key resume sections like contact info, experience, education, and skills</li>
+                    <li><strong>Keyword Density:</strong> We analyze how well your resume matches industry-specific keywords</li>
+                    <li><strong>Readability:</strong> We assess the readability and clarity of your content</li>
+                    <li><strong>Formatting Issues:</strong> We detect potential parsing problems like tables or special characters</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">Scoring System</h4>
+            </div>
+            <div class="card-body">
+                <p>Our scoring algorithm evaluates your resume on a 100-point scale:</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul>
+                            <li><strong>Section Completeness (40 points):</strong> Contact info, experience, education, skills</li>
+                            <li><strong>Keyword Relevance (25 points):</strong> Industry-specific terms and skills</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul>
+                            <li><strong>Readability (20 points):</strong> Clear, professional language</li>
+                            <li><strong>Technical Format (15 points):</strong> ATS-friendly formatting</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-md-4 text-center">
+                        <div class="score-circle score-good mb-2">90+</div>
+                        <small>Excellent (A)</small>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="score-circle score-fair mb-2">60-89</div>
+                        <small>Good (B-C)</small>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="score-circle score-poor mb-2">0-59</div>
+                        <small>Needs Work (D-F)</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0">Privacy & Security</h4>
+            </div>
+            <div class="card-body">
+                <p>Your privacy is important to us:</p>
+                <ul>
+                    <li>Uploaded resumes are processed securely and not shared with third parties</li>
+                    <li>Personal information is optional and not required for analysis</li>
+                    <li>Files are automatically deleted from our servers after 30 days</li>
+                    <li>All analysis data is stored locally and encrypted</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h4 class="mb-0">Supported File Types</h4>
+            </div>
+            <div class="card-body">
+                <p>We currently support the following resume formats:</p>
+                <ul>
+                    <li><i class="fas fa-file-pdf text-danger me-2"></i><strong>PDF files</strong> - Most common format, preserves formatting</li>
+                    <li><i class="fas fa-file-word text-primary me-2"></i><strong>Word documents (.docx, .doc)</strong> - Excellent for ATS compatibility</li>
+                </ul>
+                <p class="text-muted small">Maximum file size: 10MB</p>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <a href="{% url 'home' %}" class="btn btn-primary btn-lg me-3">
+                <i class="fas fa-upload me-2"></i>
+                Try It Now
+            </a>
+            <a href="{% url 'tips' %}" class="btn btn-outline-success">
+                <i class="fas fa-lightbulb me-2"></i>
+                Get ATS Tips
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

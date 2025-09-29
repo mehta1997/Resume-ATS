@@ -1,0 +1,141 @@
+{% extends 'resume_analyzer/base.html' %}
+
+{% block title %}ATS Resume Checker - Upload Your Resume{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="text-center mb-5">
+            <h1 class="display-4 mb-3">
+                <i class="fas fa-search text-primary"></i>
+                ATS Resume Checker
+            </h1>
+            <p class="lead text-muted">
+                Analyze your resume for Applicant Tracking System (ATS) compatibility and get actionable feedback to improve your job search success.
+            </p>
+        </div>
+
+        <div class="card card-upload shadow-sm mb-5">
+            <div class="card-body p-4">
+                <h3 class="card-title text-center mb-4">
+                    <i class="fas fa-cloud-upload-alt text-primary me-2"></i>
+                    Upload Your Resume
+                </h3>
+                
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">Name (Optional)</label>
+                            {{ form.name }}
+                            {% if form.name.help_text %}
+                                <div class="form-text">{{ form.name.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">Email (Optional)</label>
+                            {{ form.email }}
+                            {% if form.email.help_text %}
+                                <div class="form-text">{{ form.email.help_text }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.industry.id_for_label }}" class="form-label">Target Industry</label>
+                        {{ form.industry }}
+                        {% if form.industry.help_text %}
+                            <div class="form-text">{{ form.industry.help_text }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.file.id_for_label }}" class="form-label">Resume File *</label>
+                        {{ form.file }}
+                        {% if form.file.help_text %}
+                            <div class="form-text">{{ form.file.help_text }}</div>
+                        {% endif %}
+                        {% if form.file.errors %}
+                            <div class="text-danger">
+                                {% for error in form.file.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg px-5">
+                            <i class="fas fa-chart-line me-2"></i>
+                            Analyze Resume
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Features section -->
+        <div class="row text-center mb-5">
+            <div class="col-md-4 mb-4">
+                <div class="feature-icon text-primary">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h5>ATS Optimization</h5>
+                <p class="text-muted">Check if your resume can be properly read by Applicant Tracking Systems.</p>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-icon text-success">
+                    <i class="fas fa-keywords"></i>
+                </div>
+                <h5>Keyword Analysis</h5>
+                <p class="text-muted">Analyze keyword density for your target industry and role.</p>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-icon text-warning">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h5>Actionable Tips</h5>
+                <p class="text-muted">Get specific recommendations to improve your resume's ATS score.</p>
+            </div>
+        </div>
+
+        {% if recent_analyses %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>
+                    Recent Analyses
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for analysis in recent_analyses %}
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex justify-content-between align-items-center p-3 border rounded">
+                            <div>
+                                <h6 class="mb-1">{{ analysis.resume.original_filename|truncatechars:30 }}</h6>
+                                <small class="text-muted">{{ analysis.analyzed_at|date:"M d, Y" }}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-{% if analysis.overall_score >= 80 %}success{% elif analysis.overall_score >= 60 %}warning{% else %}danger{% endif %} fs-6">
+                                    {{ analysis.overall_score|floatformat:0 }}
+                                </span>
+                                <div class="mt-1">
+                                    <a href="{% url 'enhanced_analysis_result' analysis.id %}" class="btn btn-sm btn-outline-primary">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'analysis_list' %}" class="btn btn-outline-secondary">
+                        View All Analyses <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

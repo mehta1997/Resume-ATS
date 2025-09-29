@@ -1,0 +1,104 @@
+{% extends 'resume_analyzer/base.html' %}
+
+{% block title %}Manage Keywords{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-plus me-2"></i>
+                    Add New Keyword
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="{{ form.industry.id_for_label }}" class="form-label">Industry</label>
+                        {{ form.industry }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.keyword.id_for_label }}" class="form-label">Keyword</label>
+                        {{ form.keyword }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.weight.id_for_label }}" class="form-label">Weight</label>
+                        {{ form.weight }}
+                        <div class="form-text">Higher weight = more important (1.0 = normal, 2.0 = double importance)</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-save me-2"></i>Add Keyword
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>
+                <i class="fas fa-tags text-primary me-2"></i>
+                Manage Keywords
+            </h2>
+        </div>
+        
+        {% if keywords_by_industry %}
+            {% for industry_name, keywords in keywords_by_industry.items %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-briefcase me-2"></i>
+                        {{ industry_name }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for keyword in keywords %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="d-flex justify-content-between align-items-center p-2 border rounded">
+                                <div>
+                                    <span class="fw-bold">{{ keyword.keyword }}</span>
+                                    {% if keyword.weight != 1.0 %}
+                                        <br><small class="text-muted">Weight: {{ keyword.weight }}</small>
+                                    {% endif %}
+                                </div>
+                                <form method="post" action="{% url 'delete_keyword' keyword.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                            onclick="return confirm('Delete this keyword?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+                <h4>No keywords found</h4>
+                <p class="text-muted">Add some industry-specific keywords to improve resume analysis accuracy.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h6 class="alert-heading">
+                <i class="fas fa-info-circle me-2"></i>
+                About Keywords
+            </h6>
+            <p class="mb-0">Keywords help the ATS analyzer understand which terms are important for different industries. Add relevant skills, technologies, and job-specific terms to improve analysis accuracy for your target field.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

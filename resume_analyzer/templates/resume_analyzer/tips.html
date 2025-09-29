@@ -1,0 +1,155 @@
+{% extends 'resume_analyzer/base.html' %}
+
+{% block title %}ATS Resume Tips{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h1 class="display-5 text-center mb-5">
+            <i class="fas fa-lightbulb text-warning me-2"></i>
+            ATS Resume Tips
+        </h1>
+        
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-file-alt me-2"></i>Format & Structure</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <strong>Use standard fonts:</strong> Stick to Arial, Calibri, or Times New Roman (10-12pt)
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <strong>Clear section headers:</strong> Use standard headings like "Work Experience", "Education", "Skills"
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <strong>Avoid tables and graphics:</strong> Use simple bullet points and text formatting
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <strong>Save as .docx or .pdf:</strong> These formats are most ATS-friendly
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-tags me-2"></i>Keywords & Content</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <strong>Mirror job descriptions:</strong> Use keywords from the job posting naturally
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <strong>Include industry terms:</strong> Use relevant technical skills and buzzwords
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <strong>Spell out acronyms:</strong> Use both "Search Engine Optimization (SEO)" and "SEO"
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <strong>Use action verbs:</strong> Start bullet points with strong action words
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0"><i class="fas fa-user-circle me-2"></i>Contact & Personal Info</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <strong>Include full contact info:</strong> Name, phone, email, city/state, LinkedIn
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <strong>Use a professional email:</strong> firstname.lastname@email.com format
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-times-circle text-danger me-2"></i>
+                        <strong>Avoid photos:</strong> Unless specifically required, don't include headshots
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-times-circle text-danger me-2"></i>
+                        <strong>Skip personal details:</strong> Age, marital status, etc. are not ATS-friendly
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Common Mistakes</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-3">
+                        <i class="fas fa-times-circle text-danger me-2"></i>
+                        <strong>Headers and footers:</strong> Important info can be missed in these sections
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-times-circle text-danger me-2"></i>
+                        <strong>Special characters:</strong> Avoid excessive symbols, boxes, or unusual formatting
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-times-circle text-danger me-2"></i>
+                        <strong>Multiple columns:</strong> Can confuse ATS parsing - stick to single column layout
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-times-circle text-danger me-2"></i>
+                        <strong>Creative templates:</strong> Fancy designs often don't parse well
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h4 class="mb-0"><i class="fas fa-chart-line me-2"></i>Optimization Tips</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-3">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        <strong>Tailor for each job:</strong> Customize your resume for each application
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        <strong>Quantify achievements:</strong> Use numbers and percentages where possible
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        <strong>Keep it relevant:</strong> Focus on experiences related to the target role
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        <strong>Test your resume:</strong> Use tools like this one to check ATS compatibility
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <a href="{% url 'home' %}" class="btn btn-primary btn-lg me-3">
+                <i class="fas fa-upload me-2"></i>
+                Test Your Resume Now
+            </a>
+            <a href="{% url 'about' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-info-circle me-2"></i>
+                Learn More About ATS
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

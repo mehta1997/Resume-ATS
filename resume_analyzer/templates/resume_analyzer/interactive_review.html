@@ -1,0 +1,453 @@
+{% extends 'resume_analyzer/base.html' %}
+{% load resume_filters %}
+
+{% block title %}Interactive Resume Review - {{ analysis.resume.original_filename }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .resume-text {
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        line-height: 1.6;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    .line-container {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 15px;
+        position: relative;
+    }
+
+    .line-number {
+        color: #6c757d;
+        font-size: 12px;
+        min-width: 40px;
+        padding-right: 10px;
+        text-align: right;
+        user-select: none;
+    }
+
+    .line-content {
+        flex: 1;
+        position: relative;
+    }
+
+    .highlighted-text {
+        padding: 2px 4px;
+        border-radius: 3px;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .highlight-weak-verb {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+    }
+
+    .highlight-missing-quantification {
+        background-color: #d1ecf1;
+        border: 1px solid #b3d7ff;
+    }
+
+    .highlight-missing-keywords {
+        background-color: #f8d7da;
+        border: 1px solid #f5c2c7;
+    }
+
+    .highlight-generic-phrase {
+        background-color: #e2e3e5;
+        border: 1px solid #d3d3d4;
+    }
+
+    .suggestion-tooltip {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1000;
+        display: none;
+        margin-top: 5px;
+    }
+
+    .suggestion-tooltip.show {
+        display: block;
+    }
+
+    .suggestion-header {
+        font-weight: bold;
+        color: #495057;
+        margin-bottom: 8px;
+        font-size: 13px;
+    }
+
+    .suggestion-content {
+        font-size: 12px;
+        color: #6c757d;
+        line-height: 1.4;
+    }
+
+    .suggestion-examples {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .suggestion-examples strong {
+        font-size: 11px;
+        color: #495057;
+    }
+
+    .priority-high {
+        border-left: 4px solid #dc3545;
+    }
+
+    .priority-medium {
+        border-left: 4px solid #ffc107;
+    }
+
+    .priority-low {
+        border-left: 4px solid #6c757d;
+    }
+
+    .stats-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .issue-summary {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .issue-count {
+        display: inline-block;
+        background: #495057;
+        color: white;
+        border-radius: 15px;
+        padding: 4px 12px;
+        font-size: 12px;
+        margin-left: 10px;
+    }
+
+    .legend {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .legend-item {
+        display: inline-block;
+        margin-right: 20px;
+        margin-bottom: 10px;
+        font-size: 12px;
+    }
+
+    .legend-color {
+        display: inline-block;
+        width: 20px;
+        height: 12px;
+        border-radius: 3px;
+        margin-right: 5px;
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h2">
+                    <i class="fas fa-highlighter text-primary me-2"></i>
+                    Interactive Resume Review
+                </h1>
+                <p class="text-muted mb-0">{{ analysis.resume.original_filename }}</p>
+            </div>
+            <div class="text-end">
+                <div class="score-circle score-{% if analysis.overall_score >= 80 %}good{% elif analysis.overall_score >= 60 %}fair{% else %}poor{% endif %}">
+                    {{ analysis.overall_score|floatformat:0 }}/100
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Overview -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="stats-card">
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <h3 class="mb-1">{{ text_issues|length }}</h3>
+                    <small>Lines with Issues</small>
+                </div>
+                <div class="col-md-3">
+                    <h3 class="mb-1">{{ total_issues }}</h3>
+                    <small>Total Suggestions</small>
+                </div>
+                <div class="col-md-3">
+                    <h3 class="mb-1">{{ high_priority_issues }}</h3>
+                    <small>High Priority</small>
+                </div>
+                <div class="col-md-3">
+                    <h3 class="mb-1">{{ analysis.word_count }}</h3>
+                    <small>Total Words</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Legend -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="legend">
+            <h6 class="mb-3">
+                <i class="fas fa-palette me-2"></i>
+                Highlight Legend
+            </h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="legend-item">
+                        <span class="legend-color highlight-weak-verb"></span>
+                        Weak Action Verbs
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color highlight-missing-quantification"></span>
+                        Missing Numbers/Metrics
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="legend-item">
+                        <span class="legend-color highlight-missing-keywords"></span>
+                        Missing Keywords
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color highlight-generic-phrase"></span>
+                        Generic Phrases
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interactive Resume Text -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-text me-2"></i>
+                    Your Resume Text
+                    <span class="text-muted small">Click on highlighted text to see suggestions</span>
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="resume-text">
+                    {% if text_issues %}
+                        {% for line_issue in text_issues %}
+                        <div class="line-container">
+                            <div class="line-number">{{ line_issue.line_number }}</div>
+                            <div class="line-content">
+                                {% if line_issue.issues %}
+                                    <!-- Process the line text to highlight issues -->
+                                    {% for issue in line_issue.issues %}
+                                        <span class="highlighted-text highlight-{{ issue.type }} priority-{{ issue.priority }}" 
+                                             onclick="toggleSuggestion(this)">
+                                            {{ issue.text }}
+                                            <div class="suggestion-tooltip priority-{{ issue.priority }}">
+                                                <div class="suggestion-header">
+                                                    {% if issue.priority == 'high' %}
+                                                        <i class="fas fa-exclamation-circle text-danger me-1"></i>High Priority
+                                                    {% elif issue.priority == 'medium' %}
+                                                        <i class="fas fa-exclamation-triangle text-warning me-1"></i>Medium Priority
+                                                    {% else %}
+                                                        <i class="fas fa-info-circle text-secondary me-1"></i>Low Priority
+                                                    {% endif %}
+                                                </div>
+                                                <div class="suggestion-content">
+                                                    {{ issue.suggestion }}
+                                                    
+                                                    {% if issue.alternatives %}
+                                                        <div class="suggestion-examples">
+                                                            <strong>Try instead:</strong><br>
+                                                            {% for alt in issue.alternatives %}
+                                                                <span class="badge bg-success me-1">{{ alt }}</span>
+                                                            {% endfor %}
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    {% if issue.examples %}
+                                                        <div class="suggestion-examples">
+                                                            <strong>Examples:</strong><br>
+                                                            {% for example in issue.examples %}
+                                                                <span class="badge bg-info me-1">{{ example }}</span>
+                                                            {% endfor %}
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    {% if issue.keywords %}
+                                                        <div class="suggestion-examples">
+                                                            <strong>Add keywords:</strong><br>
+                                                            {% for keyword in issue.keywords %}
+                                                                <span class="badge bg-primary me-1">{{ keyword|title }}</span>
+                                                            {% endfor %}
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    {% if issue.alternative %}
+                                                        <div class="suggestion-examples">
+                                                            <strong>Better version:</strong><br>
+                                                            <em>"{{ issue.alternative }}"</em>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </span>
+                                        {% if not forloop.last %} {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    {{ line_issue.line_text }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        {% for line in resume_lines %}
+                        <div class="line-container">
+                            <div class="line-number">{{ forloop.counter }}</div>
+                            <div class="line-content">{{ line }}</div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Action Tips -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-rocket text-primary me-2"></i>
+                    Quick Action Tips
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6 class="text-danger">
+                            <i class="fas fa-exclamation-circle me-1"></i>
+                            High Priority (Fix First)
+                        </h6>
+                        <ul class="small">
+                            <li>Replace weak action verbs with strong ones</li>
+                            <li>Add missing contact information</li>
+                            <li>Include essential resume sections</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-warning">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            Medium Priority
+                        </h6>
+                        <ul class="small">
+                            <li>Add quantifiable achievements</li>
+                            <li>Include relevant industry keywords</li>
+                            <li>Expand on accomplishments</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-secondary">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Low Priority (Polish)
+                        </h6>
+                        <ul class="small">
+                            <li>Replace generic phrases</li>
+                            <li>Improve word choices</li>
+                            <li>Fine-tune formatting</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="text-center">
+            <a href="{% url 'enhanced_analysis_result' analysis.id %}" class="btn btn-outline-primary me-3">
+                <i class="fas fa-chart-bar me-2"></i>
+                View Detailed Analysis
+            </a>
+            <a href="{% url 'home' %}" class="btn btn-primary me-3">
+                <i class="fas fa-upload me-2"></i>
+                Analyze Another Resume
+            </a>
+            <a href="{% url 'tips' %}" class="btn btn-outline-success">
+                <i class="fas fa-lightbulb me-2"></i>
+                ATS Tips
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleSuggestion(element) {
+    // Hide all other tooltips
+    document.querySelectorAll('.suggestion-tooltip.show').forEach(tooltip => {
+        if (tooltip !== element.querySelector('.suggestion-tooltip')) {
+            tooltip.classList.remove('show');
+        }
+    });
+    
+    // Toggle the clicked tooltip
+    const tooltip = element.querySelector('.suggestion-tooltip');
+    tooltip.classList.toggle('show');
+    
+    // Close tooltip when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!element.contains(event.target)) {
+            tooltip.classList.remove('show');
+        }
+    });
+    
+    event.stopPropagation();
+}
+
+// Close all tooltips when clicking outside
+document.addEventListener('click', function() {
+    document.querySelectorAll('.suggestion-tooltip.show').forEach(tooltip => {
+        tooltip.classList.remove('show');
+    });
+});
+</script>
+{% endblock %}
